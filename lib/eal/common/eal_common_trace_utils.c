@@ -46,6 +46,8 @@ trace_entry_compare(const char *name)
 			count++;
 		if (count > 1) {
 			trace_err("found duplicate entry %s", name);
+			trace_err("Duplicate trace entry details: file: %s, function: %s, line: %d",
+				          tp->file, tp->function, tp->line);			
 			rte_errno = EEXIST;
 			return true;
 		}
