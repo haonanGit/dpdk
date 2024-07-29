@@ -18,13 +18,29 @@ extern "C" {
 
 RTE_DECLARE_PER_LCORE(volatile int, trace_point_sz);
 
+// #define RTE_TRACE_POINT_REGISTER(trace, name) \
+// rte_trace_point_t __attribute__((section("__rte_trace_point"))) __##trace; \
+// static const char __##trace##_name[] = RTE_STR(name); \
+// RTE_INIT(trace##_init) \
+// { \
+// 	__rte_trace_point_register(&__##trace, __##trace##_name, \
+// 		(void (*)(void)) trace); \
+// }
+
+
 #define RTE_TRACE_POINT_REGISTER(trace, name) \
 rte_trace_point_t __attribute__((section("__rte_trace_point"))) __##trace; \
 static const char __##trace##_name[] = RTE_STR(name); \
+static int __##trace##_registered = 0; \
 RTE_INIT(trace##_init) \
 { \
-	__rte_trace_point_register(&__##trace, __##trace##_name, \
-		(void (*)(void)) trace); \
+    if (!__##trace##_registered) { \
+        __rte_trace_point_register(&__##trace, __##trace##_name, \
+            (void (*)(void)) trace); \
+        __##trace##_registered = 1; \
+    } else { \
+        printf("Trace point " #trace " already registered.\n"); \
+    } \
 }
 
 #define __rte_trace_point_emit_header_generic(t) \
